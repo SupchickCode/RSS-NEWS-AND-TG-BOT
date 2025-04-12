@@ -1,0 +1,19 @@
+version: '3.9'
+
+name: tg-bot-supchick
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTREGS_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTREGS_DB: postgres
+      PGDATA: /var/lib/postgresql/data/
+    ports:
+      - 5432:5432
+    volumes:
+      - db:/var/lib/postgresql/data/
+
+volumes:
+  db:
