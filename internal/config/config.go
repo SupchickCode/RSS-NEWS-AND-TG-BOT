@@ -1,7 +1,12 @@
 package config
 
 import (
+	"log"
+	"sync"
 	"time"
+
+	"github.com/cristalhq/aconfig"
+	"github.com/cristalhq/aconfig/aconfighcl"
 )
 
 type Config struct {
@@ -14,4 +19,27 @@ type Config struct {
 	OpenAIKey            string        `hcl:"openai_key" env:"OPENAI_KEY"`
 	OpenAIPrompt         string        `hcl:"openai_prompt" env:"OPENAI_PROMPT"`
 	OpenAIModel          string        `hcl:"openai_model" env:"OPENAI_MODEL" default:"gpt-3.5-turbo"`
+}
+
+var (
+	cnf  Config
+	once sync.Once
+)
+
+func Get() Config {
+	once.Do(func() {
+		loader := aconfig.LoaderFor(&cnf, aconfig.Config{
+			EnvPrefix: "TG",
+			Files:     []string{"./config.hcl", "./config.local.hcl"},
+			FileDecoders: map[string]aconfig.FileDecoder{
+				".hcl": aconfighcl.New(),
+			},
+		})
+
+		if err := loader.Load(); err != nil {
+			log.Printf("[ERROR] failed to load congfig: %v", err)
+		}
+	})
+
+	return cnf
 }
